@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1e1e2e" />
+    <meta
+      name="description"
+      content="Vibe-Check is a passive security and leak scanner. Inspect TLS, security headers, exposed files, and leaked secrets on any public website in seconds."
+    />
+    <link rel="canonical" href="%VITE_SITE_URL%" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vibe-Check — Web Security & Leak Scanner" />
+    <meta
+      property="og:description"
+      content="A passive security and hygiene scan for your public website. TLS, headers, exposed files, and leaked secrets — no brute force, no signup."
+    />
+    <meta property="og:url" content="%VITE_SITE_URL%" />
+    <meta property="og:site_name" content="Vibe-Check" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Vibe-Check — Web Security & Leak Scanner" />
+    <meta
+      name="twitter:description"
+      content="Passive security and leak scanning for public websites."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Vibe-Check — Web Security &amp; Leak Scanner</title>
+
+    <script>
+      // Resolve the theme before first paint so there is no flash.
+      (function () {
+        try {
+          var stored = localStorage.getItem("vibecheck-theme");
+          var theme = stored === "light" || stored === "dark" ? stored : "dark";
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          document.documentElement.style.colorScheme = theme;
+        } catch (_) {
+          /* storage may be unavailable; dark is the default */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
