@@ -1,6 +1,21 @@
-# Vibe-Check
+<div align="center">
 
-**A passive web security and leak scanner for public websites.**
+# >_ Vibe-Check Scanner
+
+**Shipped with AI? Audit your site's security headers, TLS posture, exposed files, and leaked secrets in seconds.**
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-scan.ammarramma.dev-a6e3a1?style=for-the-badge&logo=cloudflare&logoColor=1e1e2e)](https://scan.ammarramma.dev)
+[![API Status](https://img.shields.io/badge/API-api.ammarramma.dev-89b4fa?style=for-the-badge&logo=go&logoColor=1e1e2e)](https://api.ammarramma.dev/healthz)
+[![License: MIT](https://img.shields.io/badge/License-MIT-cba6f7?style=for-the-badge)](LICENSE)
+
+[![React](https://img.shields.io/badge/React-19-1e1e2e?style=flat-square&logo=react&logoColor=89dceb)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-7-1e1e2e?style=flat-square&logo=typescript&logoColor=89b4fa)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-8-1e1e2e?style=flat-square&logo=vite&logoColor=f9e2af)](https://vitejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-1e1e2e?style=flat-square&logo=tailwindcss&logoColor=94e2d5)](https://tailwindcss.com)
+
+[Live App](https://scan.ammarramma.dev) · [API Health](https://api.ammarramma.dev/healthz) · [Portfolio](https://ammarramma.dev) · [Sponsor](https://github.com/sponsors/ammarramma)
+
+</div>
 
 Vibe-Check checks what a site already exposes: TLS configuration, security
 headers, publicly reachable files, and accidentally leaked secrets. It turns
@@ -8,8 +23,6 @@ those findings into a clear security score with actionable next steps.
 
 The scanner is passive by design. It does not brute-force endpoints, exploit
 targets, or store scan results.
-
-**Live application:** [scan.ammarramma.dev](https://scan.ammarramma.dev)
 
 This repository contains the web client. The Go/Gin scanning service is
 maintained separately.
