@@ -1,22 +1,66 @@
-# Vibe-Check — Web Security & Leak Scanner
+# Vibe-Check
 
-Frontend for **Vibe-Check**, a passive security and leak scanner for public
-websites. It reads only what a site already serves: TLS, security headers,
-exposed files, and leaked secrets. No brute force, no exploitation, no stored
-results.
+**A passive web security and leak scanner for public websites.**
 
-Built as a decoupled client for the Go/Gin `mapi` backend, intended to run at
-`https://scan.ammarramma.dev`.
+Vibe-Check checks what a site already exposes: TLS configuration, security
+headers, publicly reachable files, and accidentally leaked secrets. It turns
+those findings into a clear security score with actionable next steps.
 
-## Stack
+The scanner is passive by design. It does not brute-force endpoints, exploit
+targets, or store scan results.
 
-- Vite + React 19 + TypeScript
-- Tailwind CSS v4 via `@tailwindcss/vite`
-- Lucide React icons
-- Catppuccin Latte / Mocha design tokens (dark by default)
-- Montserrat + Fira Code loaded from Google Fonts
+**Live application:** [scan.ammarramma.dev](https://scan.ammarramma.dev)
 
-## Quick start
+This repository contains the web client. The Go/Gin scanning service is
+maintained separately.
+
+## Features
+
+- **One-scan security overview** with an A–F grade and a 0–100 score.
+- **TLS and redirect analysis**, including certificate details, protocol
+  version, and HTTP-to-HTTPS redirect behavior.
+- **Security header checks** for the headers that matter in production.
+- **Exposure checks** for commonly forgotten public files and paths.
+- **Secret detection** for credentials and tokens exposed in public assets.
+- **Prioritized findings** with evidence, explanations, and expandable detail.
+- **AI-ready reports** that can be copied as Markdown or downloaded as JSON.
+- **Live API status** in the navigation bar.
+- **Light and dark themes** with the Catppuccin Latte and Mocha palettes.
+- **Responsive interface** designed for desktop and mobile.
+
+## How it works
+
+1. Enter a public URL or pick one of the quick examples.
+2. The frontend sends the target to the scanner API.
+3. The backend performs passive checks across transport, headers, exposure, and
+   secrets.
+4. Results are scored, grouped by category, and presented with the issues worth
+   fixing first.
+
+Scans are intentionally read-only. Findings are indicators, not a replacement
+for a full penetration test.
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| UI | React 19, TypeScript |
+| Build tool | Vite |
+| Styling | Tailwind CSS v4 |
+| Icons | Lucide React |
+| Theme | Catppuccin Latte / Mocha |
+| Typography | Montserrat, Fira Code |
+| Deployment | Cloudflare Workers static assets |
+| API | Go/Gin `mapi` service (separate service) |
+
+## Getting started
+
+### Requirements
+
+- Node.js 20.19+ or 22.12+
+- npm
+
+### Install and run
 
 ```bash
 npm install
@@ -24,83 +68,67 @@ cp env.example .env
 npm run dev
 ```
 
-Open the URL printed by Vite.
+Vite prints the local development URL. The app is ready to use once the API
+environment variables are configured.
 
-### Environment variables
+## Configuration
 
-Every backend URL and outbound link is environment-driven. Nothing is hardcoded
-in component code.
+Runtime configuration is provided through Vite environment variables. Start
+from the tracked example file:
 
-| Variable | Purpose | Example |
+```bash
+cp env.example .env
+```
+
+| Variable | Required | Description |
 | --- | --- | --- |
-| `VITE_API_BASE_URL` | Base URL of the `mapi` backend, no trailing slash | `https://api.ammarramma.dev` |
-| `VITE_SPONSORS` | JSON array of sponsor buttons; first entry is primary; empty hides the section | See below |
-| `VITE_PORTFOLIO_URL` | Portfolio link; empty hides it | `https://ammarramma.dev` |
-| `VITE_SITE_URL` | Public URL used for canonical/OG tags at build time | `https://scan.ammarramma.dev` |
-| `VITE_DEV_USE_PROXY` | Local only: proxy API calls through Vite | `true` |
-| `VITE_DEV_API_TARGET` | Local only: proxy destination | `https://api.ammarramma.dev` |
+| `VITE_API_BASE_URL` | Yes | Base URL of the scanner API, without a trailing slash. |
+| `VITE_SITE_URL` | Recommended | Public URL used for canonical and Open Graph metadata at build time. |
+| `VITE_PORTFOLIO_URL` | Optional | Portfolio link shown in the header and footer. |
+| `VITE_SPONSORS` | Optional | JSON array of support links. The first entry is the primary call to action. |
+| `VITE_DEV_USE_PROXY` | Local only | Set to `true` to proxy API requests through Vite during development. |
+| `VITE_DEV_API_TARGET` | Local only | API origin used by the development proxy. |
 
-Add or remove sponsors by editing `VITE_SPONSORS` only — no component changes.
-The value must be a single-line JSON array. Supported icons: `coffee`, `heart`,
-`github`, `star`, `link`.
+### Sponsor links
+
+Support links are rendered from `VITE_SPONSORS`. Add or remove an entry without
+changing the UI code. The value must be a single-line JSON array. Supported icon
+names are `coffee`, `heart`, `github`, `star`, and `link`.
 
 ```env
 VITE_SPONSORS='[{"label":"Buy Ammar a Coffee","url":"https://ko-fi.com/ammarramma","icon":"coffee"},{"label":"Join the Tribe","url":"https://sociabuzz.com/ammarramma/tribe","icon":"heart"},{"label":"Sponsor on GitHub","url":"https://github.com/sponsors/ammarramma","icon":"github"}]'
 ```
 
-### Local development and CORS
+Invalid or empty entries are ignored. If `VITE_SPONSORS` is empty, the support
+section is hidden.
 
-The production API only allows the deployed origin
-(`https://scan.ammarramma.dev`). A browser on `localhost` cannot call it
-directly, so development uses a Vite proxy:
+### Local API access
+
+The hosted API has a CORS allowlist limited to the production origin. To call it
+from localhost, use Vite's development proxy. Add the following to
+`.env.local`:
 
 ```env
-# .env.local
 VITE_DEV_USE_PROXY=true
 VITE_DEV_API_TARGET=https://api.ammarramma.dev
 ```
 
-With this enabled, the app calls `/v1/...` and `/healthz` on the Vite dev server,
-which forwards them to the API. Production builds ignore both variables. If you
-deploy the frontend elsewhere, add that origin to the backend CORS allowlist
-instead.
+The browser then calls `/v1/*` and `/healthz` on the Vite server, which forwards
+those requests to the API. These variables are ignored in production builds.
 
 ## Scripts
 
-```bash
-npm run dev        # Vite dev server
-npm run typecheck  # TypeScript project build check
-npm run build      # tsc -b && vite build
-npm run preview    # preview the production build
-npm run deploy     # build, then wrangler deploy
-```
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite development server. |
+| `npm run typecheck` | Run the TypeScript project checks. |
+| `npm run build` | Type-check and create a production build in `dist/`. |
+| `npm run preview` | Preview the production build locally. |
+| `npm run deploy` | Build the app and deploy it with Wrangler. |
 
-## Deploy to Cloudflare
+## API overview
 
-The app is a static SPA. `wrangler.jsonc` points Workers static assets at
-`./dist` with SPA fallback.
-
-```bash
-npm run deploy
-```
-
-Then attach the custom domain `scan.ammarramma.dev` in the Cloudflare dashboard.
-
-For Cloudflare Pages instead:
-
-```bash
-npm run build
-npx wrangler pages deploy dist --project-name vibecheck
-```
-
-Build-time environment variables must be available when `npm run build` runs.
-`VITE_SITE_URL` is substituted into `index.html` during the Vite build, so set
-it in your CI/deploy environment (or `.env`) before building.
-
-## API contract
-
-The client mirrors `mapi/internal/services/vibecheck/model.go` and the shared
-envelope in `mapi/internal/shared/response.go`.
+The frontend talks to the following endpoints:
 
 ### Scan
 
@@ -111,7 +139,7 @@ Content-Type: application/json
 { "url": "https://example.com" }
 ```
 
-Success (`200`) returns:
+A successful response follows a shared envelope:
 
 ```json
 {
@@ -136,26 +164,8 @@ Success (`200`) returns:
       "skipped": 0,
       "info": 0
     },
-    "categories": [
-      {
-        "category": "transport",
-        "score": 85,
-        "passed": 3,
-        "warnings": 0,
-        "failed": 1,
-        "skipped": 0
-      }
-    ],
-    "checks": [
-      {
-        "id": "https_redirect",
-        "category": "transport",
-        "title": "HTTP to HTTPS redirect",
-        "status": "fail",
-        "detail": "Plain HTTP requests are answered without redirecting to HTTPS.",
-        "evidence": "http://example.com/"
-      }
-    ]
+    "categories": [],
+    "checks": []
   },
   "error": null,
   "meta": {
@@ -165,8 +175,8 @@ Success (`200`) returns:
 }
 ```
 
-`status` is one of `pass`, `warn`, `fail`, `skip`, `info`. Categories are
-`transport`, `headers`, `exposure`, and `secrets`.
+The scan result includes four categories (`transport`, `headers`, `exposure`,
+and `secrets`) and check statuses of `pass`, `warn`, `fail`, `skip`, or `info`.
 
 ### Health
 
@@ -174,84 +184,88 @@ Success (`200`) returns:
 GET ${VITE_API_BASE_URL}/healthz
 ```
 
-Used by the navbar live indicator. It polls every 45 seconds and when the tab
-becomes visible again.
+Used by the live API indicator in the navigation bar. The client checks the
+endpoint periodically and when the browser tab becomes visible again.
 
 ### Errors
 
-Failures use the shared envelope with `success: false`, `data: null`, and an
-`error` object (`code`, `message`, optional `details`). The UI handles these
-codes explicitly:
+Failures use the same envelope with `success: false` and an `error` object.
+Important cases include:
 
-| Status | Codes | UI |
-| --- | --- | --- |
-| 400 | `invalid_request`, `invalid_url`, `blocked_target` | Invalid target / target blocked (SSRF protection) |
-| 408 | `scan_cancelled` | Scan cancelled |
-| 413 | `payload_too_large` | Request too large |
-| 429 | `rate_limited` | Countdown using `Retry-After` or `details.retry_after_seconds` |
-| 502 | `dns_error`, `tls_error`, `target_unreachable` | DNS/TLS/unreachable specific message |
-| 503 | `server_busy` | Scanner is busy |
-| 504 | `scan_timeout` | Scan timed out |
-| 500 | `internal_error` | Generic scanner error |
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid request, invalid URL, or blocked target. |
+| `408` | The scan was cancelled. |
+| `413` | The request payload was too large. |
+| `429` | Rate limited. The UI shows a countdown from `Retry-After`. |
+| `502` | DNS, TLS, or target reachability failure. |
+| `503` | The scanner is busy. |
+| `504` | The scan timed out. |
+| `500` | Internal scanner error. |
 
-The client also reads `X-Request-ID`, `X-RateLimit-*`, and `Retry-After` when
-exposed. Request IDs are shown on results and errors.
+Request IDs are displayed on both results and errors to make support and
+debugging easier.
 
-## Features
+## Deployment
 
-- **Live API badge** in the navbar via `GET /healthz` (online / checking /
-  offline).
-- **URL scanner** with normalization, Enter-to-submit, inline validation, and
-  quick targets.
-- **Bento result view**: grade gauge, score progress, normalized target,
-  duration, timestamp, and request ID.
-- **TLS & redirect card**: protocol, certificate status, subject, issuer,
-  expiry, and HTTP→HTTPS redirect evidence.
-- **Findings explorer**: status tabs (All / Issues / Passed / Info / Skipped),
-  category filters, search, expandable detail and evidence, copy buttons.
-- **Copy Markdown report**: a structured report made for pasting into an AI
-  coding agent, plus JSON download.
-- **Code-aware errors** with retry countdown and request ID.
-- **Dark/light theme** (Mocha/Latte) persisted in localStorage, with a
-  pre-paint script to avoid a flash.
-- **Data-driven support CTA** with Ko-fi, Sociabuzz, GitHub Sponsors, and any
-  future sponsor added via `VITE_SPONSORS`, plus portfolio credit from
-  `VITE_PORTFOLIO_URL`.
+The application is a static single-page app deployed to Cloudflare Workers
+static assets.
 
-## Design system
+```bash
+npm run deploy
+```
 
-`src/index.css` is the single source of truth for color, typography, radius,
-and shadow tokens. Components use semantic utilities (`bg-background`,
-`bg-card`, `text-primary`, `border-border`, `font-mono`, `text-destructive`,
-etc.) and never hardcoded hex/rgb values.
+`wrangler.jsonc` serves the contents of `dist/` with SPA fallback handling.
+Attach the custom domain in the Cloudflare dashboard after the first deployment.
 
-- Default theme: **Mocha** (`class="dark"` on `<html>`)
-- Light theme: **Latte** (`.dark` removed)
-- Persisted key: `vibecheck-theme`
-- Fonts: `--font-sans` Montserrat, `--font-mono` Fira Code
+For Cloudflare Pages, deploy the generated `dist/` directory with:
+
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name vibecheck
+```
+
+Build-time variables such as `VITE_SITE_URL` must be available when the build
+runs. They are embedded into the generated assets.
 
 ## Project structure
 
 ```text
 src/
-  components/        UI: Header, Hero, ScanForm, result cards, findings, errors
-  components/ui/     Shared Button primitives
-  hooks/             useScan, useTheme, useApiHealth
-  lib/               API client, types, formatting, env, report builder
-  App.tsx            Page composition and state wiring
-  index.css          Catppuccin theme + custom utilities/animations
-public/
-  _headers           Security headers + CSP for Cloudflare
-  _redirects         SPA fallback
-  robots.txt
-wrangler.jsonc       Cloudflare Workers static assets config
+  components/     UI components and result views
+  hooks/          Scan, theme, and API health hooks
+  lib/            API client, types, formatting, sponsors, reports
+  App.tsx         Page composition
+  index.css       Design tokens, theme, and utilities
+public/           Static assets and security headers
+env.example       Environment variable reference
+wrangler.jsonc    Cloudflare Workers configuration and SPA fallback
 ```
 
-## Security notes
+## Security and privacy
 
-- The frontend is passive; it never crawls aggressively or exploits targets.
-- `public/_headers` sets CSP, frame denial, nosniff, and a restrictive
-  permissions policy. `connect-src` allows HTTPS API calls; Google Fonts are
-  allowed for styles/fonts.
-- Findings are indicators, not a full penetration test. Verify anything
-  critical before acting on it.
+- Scanning is passive and read-only.
+- Targets on private, loopback, and link-local addresses are rejected by the
+  API to reduce SSRF risk.
+- The frontend does not store scan results.
+- Security headers and a content security policy are configured in
+  `public/_headers`.
+- Findings are indicators, not a guarantee that a site is secure. Verify
+  critical issues before acting on them.
+
+## Support
+
+Vibe-Check is free to use. If it saved you time, you can support the project
+through [Ko-fi](https://ko-fi.com/ammarramma),
+[the Sociabuzz tribe](https://sociabuzz.com/ammarramma/tribe), or
+[GitHub Sponsors](https://github.com/sponsors/ammarramma).
+
+## Contributing
+
+Issues and pull requests are welcome. Please keep changes focused, preserve the
+passive-scanning model, and verify the production build before opening a pull
+request:
+
+```bash
+npm run build
+```

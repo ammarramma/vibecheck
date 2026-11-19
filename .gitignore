@@ -29,3 +29,6 @@ dist-ssr
 
 # Cloudflare / Wrangler
 .wrangler
+
+# Local agent notes/instructions
+AGENT.md
